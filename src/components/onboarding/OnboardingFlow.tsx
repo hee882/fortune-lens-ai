@@ -26,10 +26,10 @@ export default function OnboardingFlow() {
         <ProgressBar current={currentStep} total={7} />
       )}
 
-      <div className={`relative z-10 px-4 sm:px-6 ${
+      <div className={`relative z-10 px-4 sm:px-6 flex justify-center ${
         isScrollable
           ? "py-12 sm:py-16"
-          : "flex items-center justify-center min-h-svh py-8"
+          : "items-center min-h-svh py-8"
       }`}>
         <AnimatePresence mode="wait" custom={direction}>
           <StepRenderer key={currentStep} step={currentStep} direction={direction} />

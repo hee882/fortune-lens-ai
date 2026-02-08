@@ -94,12 +94,12 @@ export async function GET(request: NextRequest) {
         {/* 하단 CTA */}
         <div style={{
           display: "flex",
-          color: "rgba(245,197,66,0.7)",
-          fontSize: "16px",
+          color: "rgba(245,197,66,0.8)",
+          fontSize: "18px",
           marginTop: "32px",
-          letterSpacing: "2px",
+          letterSpacing: "1px",
         }}>
-          당신의 운세 유형은? → fortunelens.ai
+          너도 해보고 나랑 궁합 맞는지 확인해봐! 🔮
         </div>
       </div>
     ),

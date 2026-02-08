@@ -51,16 +51,19 @@ export default function ShareClient({ typeName, typeEmoji, typeTitle, score }: S
             <span className="text-white/30 text-sm">/ 100</span>
           </div>
 
-          <p className="text-white/50 text-sm mb-8">
-            이 사람은 <span className="text-amber-300">{typeName}</span> 유형이에요!<br />
-            당신의 운세 유형은 무엇일까요?
+          <p className="text-white/50 text-sm mb-2">
+            이 사람은 <span className="text-amber-300">{typeName}</span> 유형이래!
+          </p>
+          <p className="text-white/35 text-xs mb-8 leading-relaxed">
+            너도 해보고 나랑 궁합 맞는지 확인해볼래?<br />
+            8가지 유형 중 너는 어떤 유형인지 알아보자!
           </p>
 
           <Link
             href="/"
             className="inline-block px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-medium text-sm hover:shadow-[0_0_30px_rgba(245,197,66,0.3)] transition-shadow"
           >
-            나도 운세 보러 가기
+            나도 해보고 궁합 확인하기
           </Link>
         </motion.div>
 

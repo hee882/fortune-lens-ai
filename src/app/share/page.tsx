@@ -22,8 +22,8 @@ export async function generateMetadata({ searchParams }: SharePageProps): Promis
   const score = params.s || "80";
   const typeInfo = TYPE_NAMES[typeId] || TYPE_NAMES.pioneer;
 
-  const title = `나는 "${typeInfo.emoji} ${typeInfo.name}" 유형! | FortuneLens AI`;
-  const description = `종합 운세 ${score}점 — ${typeInfo.name}(${typeInfo.title}) 유형으로 분석되었어요. 당신의 운세 유형은? 지금 바로 확인하세요!`;
+  const title = `나는 ${typeInfo.emoji} ${typeInfo.name} 유형! 너도 해보고 우리 궁합 확인해봐`;
+  const description = `종합 ${score}점 · ${typeInfo.name}(${typeInfo.title}) 유형이래! 너의 유형은 뭔지 해보고 나랑 궁합 맞는지 확인해볼래? 🔮`;
 
   return {
     title,

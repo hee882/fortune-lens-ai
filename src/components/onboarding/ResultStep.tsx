@@ -21,7 +21,7 @@ export default function ResultStep() {
   const { userProfile, reset } = useOnboardingStore();
   const { name, birthday, traits } = userProfile;
   const [activeTab, setActiveTab] = useState<Tab>("today");
-  const [showShareToast, setShowShareToast] = useState(false);
+  const [shareToastMsg, setShareToastMsg] = useState("");
 
   const fortune = useMemo(() => {
     if (!birthday) return null;
@@ -44,11 +44,40 @@ export default function ResultStep() {
     return `${window.location.origin}/share?${params.toString()}`;
   }, [fortune]);
 
+  const copyToClipboard = useCallback(async (content: string) => {
+    try {
+      await navigator.clipboard.writeText(content);
+    } catch {
+      const textarea = document.createElement("textarea");
+      textarea.value = content;
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+    }
+  }, []);
+
   const handleShare = useCallback(async (platform: "twitter" | "copy" | "kakao" | "facebook" | "line" | "whatsapp" | "instagram") => {
     if (!fortune) return;
-    const text = `나는 "${fortune.archetype.emoji} ${fortune.archetype.name}" 유형! 종합 운세 ${fortune.overallScore}점 ✨ 너의 운세 유형은?`;
+    const text = `나는 ${fortune.archetype.emoji} ${fortune.archetype.name} 유형이래! 종합 ${fortune.overallScore}점 ✨ 너도 해보고 우리 궁합 맞는지 확인해볼래?`;
+    const fullText = `${text}\n${shareUrl}`;
 
     switch (platform) {
+      case "kakao":
+        // navigator.share 지원 시 네이티브 공유 (모바일에서 카카오톡 선택 가능)
+        if (navigator.share) {
+          try {
+            await navigator.share({ title: "FortuneLens AI", text, url: shareUrl });
+            return;
+          } catch { /* 사용자 취소 시 무시 */ }
+        }
+        // 폴백: 링크 복사
+        await copyToClipboard(fullText);
+        setShareToastMsg("링크가 복사되었어요! 카카오톡에 붙여넣기 하세요");
+        setTimeout(() => setShareToastMsg(""), 2500);
+        break;
       case "twitter":
         window.open(
           `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`,
@@ -57,13 +86,7 @@ export default function ResultStep() {
         break;
       case "facebook":
         window.open(
-          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(text)}`,
-          "_blank"
-        );
-        break;
-      case "kakao":
-        window.open(
-          `https://story.kakao.com/share?url=${encodeURIComponent(shareUrl)}`,
+          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
           "_blank"
         );
         break;
@@ -75,41 +98,29 @@ export default function ResultStep() {
         break;
       case "whatsapp":
         window.open(
-          `https://api.whatsapp.com/send?text=${encodeURIComponent(`${text}\n${shareUrl}`)}`,
+          `https://api.whatsapp.com/send?text=${encodeURIComponent(fullText)}`,
           "_blank"
         );
         break;
       case "instagram":
-        // 인스타그램은 직접 공유 API 없음 — 스토리 공유용 링크 복사
-        try {
-          await navigator.clipboard.writeText(`${text}\n${shareUrl}`);
-        } catch {
-          const ta = document.createElement("textarea");
-          ta.value = `${text}\n${shareUrl}`;
-          document.body.appendChild(ta);
-          ta.select();
-          document.execCommand("copy");
-          document.body.removeChild(ta);
+        // 인스타는 웹 공유 API 없음 → 네이티브 share 또는 링크 복사
+        if (navigator.share) {
+          try {
+            await navigator.share({ title: "FortuneLens AI", text, url: shareUrl });
+            return;
+          } catch { /* 사용자 취소 시 무시 */ }
         }
-        setShowShareToast(true);
-        setTimeout(() => setShowShareToast(false), 3000);
+        await copyToClipboard(fullText);
+        setShareToastMsg("링크가 복사되었어요! 인스타 스토리에 붙여넣기 하세요");
+        setTimeout(() => setShareToastMsg(""), 2500);
         break;
       case "copy":
-        try {
-          await navigator.clipboard.writeText(`${text}\n${shareUrl}`);
-        } catch {
-          const textarea = document.createElement("textarea");
-          textarea.value = `${text}\n${shareUrl}`;
-          document.body.appendChild(textarea);
-          textarea.select();
-          document.execCommand("copy");
-          document.body.removeChild(textarea);
-        }
-        setShowShareToast(true);
-        setTimeout(() => setShowShareToast(false), 2000);
+        await copyToClipboard(fullText);
+        setShareToastMsg("링크가 복사되었습니다!");
+        setTimeout(() => setShareToastMsg(""), 2000);
         break;
     }
-  }, [fortune, shareUrl]);
+  }, [fortune, shareUrl, copyToClipboard]);
 
   if (!fortune || !birthday) return null;
 
@@ -607,14 +618,14 @@ export default function ResultStep() {
 
           {/* 토스트 */}
           <AnimatePresence>
-            {showShareToast && (
+            {shareToastMsg && (
               <motion.p
                 initial={{ opacity: 0, y: 5 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
                 className="text-amber-400 text-xs mt-3"
               >
-                링크가 복사되었습니다!
+                {shareToastMsg}
               </motion.p>
             )}
           </AnimatePresence>
