@@ -35,13 +35,13 @@ export default function ResultStep() {
 
   const shareUrl = useMemo(() => {
     if (!fortune) return "";
-    if (typeof window === "undefined") return "";
+    const base = process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== "undefined" ? window.location.origin : "");
     const params = new URLSearchParams({
       t: fortune.archetype.id,
       s: String(fortune.overallScore),
       z: fortune.zodiac.sign,
     });
-    return `${window.location.origin}/share?${params.toString()}`;
+    return `${base}/share?${params.toString()}`;
   }, [fortune]);
 
   const copyToClipboard = useCallback(async (content: string) => {

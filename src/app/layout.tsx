@@ -15,7 +15,10 @@ export const viewport: Viewport = {
   themeColor: "#0a0a2e",
 };
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://fortunelens.ai";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "FortuneLens AI - AI 운세 분석",
   description: "AI 렌즈로 들여다보는 당신의 운명. 이름과 생년월일로 개인화된 운세를 확인하세요.",
   keywords: ["운세", "AI 운세", "별자리", "수비학", "fortune", "horoscope", "FortuneLens"],
@@ -24,6 +27,7 @@ export const metadata: Metadata = {
     description: "생년월일과 5가지 선택으로 AI가 분석하는 맞춤 운세. 오늘의 운세부터 인생 운세까지!",
     type: "website",
     siteName: "FortuneLens AI",
+    url: SITE_URL,
   },
   twitter: {
     card: "summary_large_image",
