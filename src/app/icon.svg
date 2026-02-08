@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1a1150"/>
+      <stop offset="100%" stop-color="#0a0a2e"/>
+    </linearGradient>
+    <linearGradient id="ball" x1="20%" y1="10%" x2="80%" y2="90%">
+      <stop offset="0%" stop-color="#c4b5fd"/>
+      <stop offset="50%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#5b21b6"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fcd34d"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+  <!-- 둥근 배경 -->
+  <rect width="32" height="32" rx="7" fill="url(#bg)"/>
+  <!-- 수정구 본체 -->
+  <circle cx="16" cy="13.5" r="9" fill="url(#ball)"/>
+  <!-- 하이라이트 -->
+  <ellipse cx="13" cy="10" rx="3.5" ry="2.5" fill="white" opacity="0.3" transform="rotate(-20 13 10)"/>
+  <!-- 중앙 빛 -->
+  <circle cx="16" cy="13" r="2.5" fill="#fcd34d" opacity="0.7"/>
+  <circle cx="16" cy="13" r="1.2" fill="white" opacity="0.9"/>
+  <!-- 골드 받침대 -->
+  <path d="M10 22.5 Q13 20.5 16 20.5 Q19 20.5 22 22.5 L23 25 Q16 26.5 9 25 Z" fill="url(#gold)"/>
+  <!-- 받침대 그림자 -->
+  <path d="M10 22.5 Q13 20.5 16 20.5 Q19 20.5 22 22.5" fill="none" stroke="#d97706" stroke-width="0.5" opacity="0.5"/>
+</svg>

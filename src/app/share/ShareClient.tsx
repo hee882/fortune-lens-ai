@@ -75,6 +75,16 @@ export default function ShareClient({ typeName, typeEmoji, typeTitle, score }: S
         >
           약 1분 소요 · 무료
         </motion.p>
+
+        {/* 푸터 */}
+        <div className="mt-12 pt-5 border-t border-white/[0.06] w-full max-w-sm text-center">
+          <nav className="flex items-center justify-center gap-3 text-white/20 text-[10px]">
+            <Link href="/privacy" className="hover:text-white/40 transition-colors">개인정보처리방침</Link>
+            <span className="text-white/10">|</span>
+            <Link href="/terms" className="hover:text-white/40 transition-colors">이용약관</Link>
+          </nav>
+          <p className="text-white/10 text-[9px] mt-2">© 2026 FortuneLens</p>
+        </div>
       </div>
     </div>
   );
