@@ -40,71 +40,51 @@ export default function BirthdayStep() {
     }
   };
 
-  const selectStyle = `
-    w-full px-4 py-3 rounded-xl appearance-none
-    bg-white/5 backdrop-blur-md border border-white/10
-    text-white text-center cursor-pointer
-    outline-none transition-all duration-300
-    hover:border-white/20 focus:border-amber-400/60
-    focus:shadow-[0_0_20px_rgba(245,197,66,0.15)]
-  `;
-
   return (
-    <GlassCard className="max-w-md mx-auto">
-      <div className="space-y-6 text-center">
-        <motion.p
+    <GlassCard className="max-w-sm mx-auto w-full" glow>
+      <div className="space-y-7 text-center">
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-amber-400/80 text-sm tracking-widest uppercase"
+          className="space-y-2"
         >
-          Step 2
-        </motion.p>
-        <h2 className="text-2xl md:text-3xl font-light text-white">
-          당신의 여정은<br />언제 시작되었나요?
-        </h2>
+          <p className="text-amber-400/70 text-xs tracking-[0.25em] uppercase font-medium">
+            Step 2 of 7
+          </p>
+          <h2 className="text-2xl sm:text-3xl font-light text-white leading-snug">
+            당신의 여정은<br />언제 시작되었나요?
+          </h2>
+        </motion.div>
 
-        <div className="grid grid-cols-3 gap-3">
-          <select
-            value={year || ""}
-            onChange={(e) => setYear(Number(e.target.value))}
-            className={selectStyle}
-          >
-            <option value="" className="bg-[#1a1150] text-white/50">연도</option>
-            {YEARS.map((y) => (
-              <option key={y} value={y} className="bg-[#1a1150]">
-                {y}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={month || ""}
-            onChange={(e) => setMonth(Number(e.target.value))}
-            className={selectStyle}
-          >
-            <option value="" className="bg-[#1a1150] text-white/50">월</option>
-            {MONTHS.map((m, i) => (
-              <option key={i + 1} value={i + 1} className="bg-[#1a1150]">
-                {m}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={day || ""}
-            onChange={(e) => setDay(Number(e.target.value))}
-            className={selectStyle}
-          >
-            <option value="" className="bg-[#1a1150] text-white/50">일</option>
-            {days.map((d) => (
-              <option key={d} value={d} className="bg-[#1a1150]">
-                {d}일
-              </option>
-            ))}
-          </select>
+        <div className="grid grid-cols-3 gap-2.5">
+          {[
+            { value: year, setter: setYear, placeholder: "연도", options: YEARS.map(y => ({ v: y, l: String(y) })) },
+            { value: month, setter: setMonth, placeholder: "월", options: MONTHS.map((m, i) => ({ v: i + 1, l: m })) },
+            { value: day, setter: setDay, placeholder: "일", options: days.map(d => ({ v: d, l: `${d}일` })) },
+          ].map(({ value, setter, placeholder, options }) => (
+            <select
+              key={placeholder}
+              value={value || ""}
+              onChange={(e) => setter(Number(e.target.value))}
+              className="
+                w-full px-3 py-3.5 rounded-xl appearance-none
+                bg-white/[0.04] border border-white/[0.08]
+                text-white text-center text-sm cursor-pointer
+                outline-none transition-all duration-300
+                hover:border-white/[0.15]
+                focus:border-amber-400/50 focus:shadow-[0_0_20px_rgba(245,197,66,0.1)]
+                pr-8
+              "
+            >
+              <option value="" className="bg-[#1a1150] text-white/40">{placeholder}</option>
+              {options.map(({ v, l }) => (
+                <option key={v} value={v} className="bg-[#1a1150]">{l}</option>
+              ))}
+            </select>
+          ))}
         </div>
 
-        <div className="flex gap-3 justify-center">
+        <div className="flex gap-3 justify-center pt-1">
           <CosmicButton variant="ghost" onClick={prevStep}>
             뒤로
           </CosmicButton>

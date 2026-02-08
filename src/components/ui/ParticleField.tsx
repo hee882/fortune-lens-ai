@@ -2,14 +2,25 @@
 
 import { useEffect, useRef } from "react";
 
-interface Particle {
+interface Star {
   x: number;
   y: number;
   size: number;
-  speedX: number;
   speedY: number;
   opacity: number;
+  maxOpacity: number;
+  twinkleSpeed: number;
+  phase: number;
+  color: [number, number, number];
 }
+
+const COLORS: [number, number, number][] = [
+  [245, 197, 66],   // gold
+  [167, 139, 250],  // purple
+  [196, 181, 253],  // light purple
+  [255, 255, 255],  // white
+  [251, 191, 36],   // amber
+];
 
 export default function ParticleField() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -17,16 +28,14 @@ export default function ParticleField() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReducedMotion) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     let animationId: number;
-    const particles: Particle[] = [];
-    const PARTICLE_COUNT = 30;
+    const stars: Star[] = [];
+    const count = Math.min(50, Math.floor(window.innerWidth / 25));
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -35,38 +44,51 @@ export default function ParticleField() {
     resize();
     window.addEventListener("resize", resize);
 
-    for (let i = 0; i < PARTICLE_COUNT; i++) {
-      particles.push({
+    for (let i = 0; i < count; i++) {
+      const maxOp = Math.random() * 0.6 + 0.15;
+      stars.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        size: Math.random() * 2 + 0.5,
-        speedX: (Math.random() - 0.5) * 0.3,
-        speedY: (Math.random() - 0.5) * 0.3,
-        opacity: Math.random() * 0.5 + 0.2,
+        size: Math.random() * 1.8 + 0.3,
+        speedY: -(Math.random() * 0.15 + 0.02),
+        opacity: Math.random() * maxOp,
+        maxOpacity: maxOp,
+        twinkleSpeed: Math.random() * 0.02 + 0.005,
+        phase: Math.random() * Math.PI * 2,
+        color: COLORS[Math.floor(Math.random() * COLORS.length)],
       });
     }
 
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      for (const p of particles) {
-        p.x += p.speedX;
-        p.y += p.speedY;
+      for (const s of stars) {
+        s.y += s.speedY;
+        s.phase += s.twinkleSpeed;
+        s.opacity = s.maxOpacity * (0.5 + 0.5 * Math.sin(s.phase));
 
-        if (p.x < 0) p.x = canvas.width;
-        if (p.x > canvas.width) p.x = 0;
-        if (p.y < 0) p.y = canvas.height;
-        if (p.y > canvas.height) p.y = 0;
+        if (s.y < -5) {
+          s.y = canvas.height + 5;
+          s.x = Math.random() * canvas.width;
+        }
 
+        const [r, g, b] = s.color;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(245, 197, 66, ${p.opacity})`;
+        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${s.opacity})`;
         ctx.fill();
+
+        // glow for larger stars
+        if (s.size > 1.2) {
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.size * 3, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${s.opacity * 0.1})`;
+          ctx.fill();
+        }
       }
 
       animationId = requestAnimationFrame(animate);
     };
-
     animate();
 
     return () => {

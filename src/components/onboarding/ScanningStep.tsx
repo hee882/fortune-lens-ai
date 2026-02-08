@@ -20,19 +20,20 @@ export default function ScanningStep() {
   useEffect(() => {
     const msgInterval = setInterval(() => {
       setMessageIndex((prev) => (prev + 1) % SCAN_MESSAGES.length);
-    }, 1500);
+    }, 1200);
 
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) return 100;
-        return prev + 1;
+        const remaining = 100 - prev;
+        const increment = Math.max(0.5, remaining * 0.03);
+        return Math.min(prev + increment, 100);
       });
-    }, 50);
+    }, 40);
 
-    // 5초 후 결과 화면으로 이동
     const completeTimeout = setTimeout(() => {
       nextStep();
-    }, 5000);
+    }, 4500);
 
     return () => {
       clearInterval(msgInterval);
@@ -42,53 +43,69 @@ export default function ScanningStep() {
   }, [nextStep]);
 
   return (
-    <div className="flex flex-col items-center text-center space-y-8">
-      {/* 스캐닝 원 애니메이션 */}
-      <div className="relative w-40 h-40">
+    <div className="flex flex-col items-center text-center space-y-10">
+      {/* 스캐닝 링 */}
+      <div className="relative w-44 h-44">
+        {/* 외부 링 */}
         <motion.div
           animate={{ rotate: 360 }}
-          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-0 rounded-full border-2 border-transparent border-t-amber-400 border-r-purple-500"
+          transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+          className="absolute inset-0 rounded-full"
+          style={{
+            background: "conic-gradient(from 0deg, transparent, rgba(245,197,66,0.4), transparent, rgba(139,92,246,0.3), transparent)",
+            mask: "radial-gradient(farthest-side, transparent calc(100% - 2px), black calc(100% - 2px))",
+            WebkitMask: "radial-gradient(farthest-side, transparent calc(100% - 2px), black calc(100% - 2px))",
+          }}
         />
+        {/* 내부 링 */}
         <motion.div
           animate={{ rotate: -360 }}
-          transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
-          className="absolute inset-3 rounded-full border-2 border-transparent border-b-amber-300 border-l-violet-400"
+          transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+          className="absolute inset-5 rounded-full"
+          style={{
+            background: "conic-gradient(from 180deg, transparent, rgba(167,139,250,0.3), transparent, rgba(251,191,36,0.2), transparent)",
+            mask: "radial-gradient(farthest-side, transparent calc(100% - 1.5px), black calc(100% - 1.5px))",
+            WebkitMask: "radial-gradient(farthest-side, transparent calc(100% - 1.5px), black calc(100% - 1.5px))",
+          }}
         />
-        <motion.div
-          animate={{ scale: [1, 1.2, 1] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute inset-0 flex items-center justify-center"
-        >
-          <span className="text-4xl">🔮</span>
-        </motion.div>
+        {/* 중앙 글로우 */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <motion.div
+            animate={{ scale: [1, 1.15, 1], opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            className="relative"
+          >
+            <span className="text-5xl">🔮</span>
+            <div className="absolute inset-0 bg-purple-500/20 blur-xl rounded-full -z-10" />
+          </motion.div>
+        </div>
       </div>
 
       <div className="space-y-3">
         <h2 className="text-xl text-white font-light">
-          <span className="text-amber-400">{userProfile.name}</span>님의 운명을 분석하고 있습니다
+          <span className="text-amber-300">{userProfile.name}</span>
+          <span className="text-white/60">님의 운명을 분석하고 있습니다</span>
         </h2>
         <motion.p
           key={messageIndex}
-          initial={{ opacity: 0, y: 5 }}
+          initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0 }}
-          className="text-white/50 text-sm"
+          className="text-white/40 text-sm"
         >
           {SCAN_MESSAGES[messageIndex]}
         </motion.p>
       </div>
 
-      {/* 프로그레스 바 */}
-      <div className="w-64 h-1.5 bg-white/10 rounded-full overflow-hidden">
-        <motion.div
-          className="h-full bg-gradient-to-r from-amber-500 to-purple-500 rounded-full"
-          initial={{ width: 0 }}
-          animate={{ width: `${progress}%` }}
-          transition={{ duration: 0.1 }}
-        />
+      {/* 프로그레스 */}
+      <div className="space-y-2 w-56">
+        <div className="w-full h-1 bg-white/[0.06] rounded-full overflow-hidden">
+          <motion.div
+            className="h-full rounded-full bg-gradient-to-r from-amber-500 via-purple-400 to-amber-500"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <p className="text-white/25 text-xs tabular-nums">{Math.round(progress)}%</p>
       </div>
-      <p className="text-white/30 text-xs">{Math.min(progress, 100)}%</p>
     </div>
   );
 }
