@@ -15,7 +15,10 @@ export default function NameStep() {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" && isValid) handleSubmit();
+    if (e.key === "Enter" && isValid) {
+      e.preventDefault();
+      handleSubmit();
+    }
   };
 
   return (
