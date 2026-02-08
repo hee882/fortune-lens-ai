@@ -15,7 +15,7 @@ export const viewport: Viewport = {
   themeColor: "#0a0a2e",
 };
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://fortunelens.ai";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://fortune-lens-ai.pages.dev";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
