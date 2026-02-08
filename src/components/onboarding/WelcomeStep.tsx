@@ -6,9 +6,9 @@ import CosmicButton from "@/components/ui/CosmicButton";
 
 const FEATURES = [
   { emoji: "🔮", title: "AI 운세 분석", desc: "이름 + 생년월일 + 성격 맞춤" },
-  { emoji: "📅", title: "오늘의 운세", desc: "매일 새로운 하루 가이드" },
-  { emoji: "🗓️", title: "2026 연간 운세", desc: "8개 카테고리 상세 분석" },
-  { emoji: "🌌", title: "인생 운세", desc: "별자리·수비학·사주 통합" },
+  { emoji: "💫", title: "나의 운세 유형", desc: "8가지 유형 중 당신은?" },
+  { emoji: "💕", title: "궁합 & 공유", desc: "친구와 궁합 확인하기" },
+  { emoji: "🃏", title: "오늘의 카드", desc: "매일 바뀌는 미니 타로" },
 ];
 
 export default function WelcomeStep() {
@@ -47,7 +47,7 @@ export default function WelcomeStep() {
         </p>
         <p className="text-white/35 text-sm leading-relaxed">
           5가지 질문에 직감으로 답하면<br />
-          별자리 · 수비학 · 사주를 결합한 분석이 시작됩니다
+          나만의 운세 유형과 궁합까지 알 수 있어요
         </p>
       </motion.div>
 

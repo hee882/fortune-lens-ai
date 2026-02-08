@@ -1,4 +1,4 @@
-import type { Birthday } from "./types";
+import type { Birthday, FortuneArchetype, CompatibilityResult, DailyCard } from "./types";
 
 // ── 별자리 ──
 export interface ZodiacInfo {
@@ -288,6 +288,9 @@ export interface FortuneResult {
   luckyColor: string;
   luckyItem: string;
   luckyDirection: string;
+  archetype: FortuneArchetype;
+  dailyCard: DailyCard;
+  dailyQuote: string;
 }
 
 export function generateFortune(birthday: Birthday, traits: string[]): FortuneResult {
@@ -328,13 +331,270 @@ export function generateFortune(birthday: Birthday, traits: string[]): FortuneRe
   const luckyItem = LUCKY_ITEMS[Math.floor(rand() * LUCKY_ITEMS.length)];
   const luckyDirection = LUCKY_DIRECTIONS[Math.floor(rand() * LUCKY_DIRECTIONS.length)];
 
+  const archetype = getArchetype(traits);
+  const dailyCard = getDailyCard(birthday);
+  const dailyQuote = getDailyQuote(birthday);
+
   return {
     zodiac, chineseZodiac, lifePath, lifePathInfo,
     categories, overallScore,
     todaySummary, yearlySummary, lifeSummary,
     keywords, luckyNumber, luckyColor, luckyItem, luckyDirection,
+    archetype, dailyCard, dailyQuote,
   };
 }
+
+// ── 8대 운세 아키타입 ──
+const ARCHETYPES: FortuneArchetype[] = [
+  {
+    id: "pioneer",
+    name: "별의 개척자",
+    emoji: "⚡",
+    title: "Star Pioneer",
+    color: "amber",
+    description: "타고난 리더십과 불꽃 같은 에너지로 새로운 길을 개척하는 유형. 도전 앞에서 가장 빛나며, 주변을 이끄는 자석 같은 카리스마를 지녔습니다.",
+    strengths: ["추진력", "리더십", "결단력", "자신감"],
+    weaknesses: ["조급함", "고집"],
+    signatureTraits: ["energetic", "ambitious", "driven", "catalyst", "spontaneous", "motivator"],
+    bestMatch: "healer",
+    goodMatches: ["creator", "adventurer"],
+    challengeMatch: "sage",
+  },
+  {
+    id: "healer",
+    name: "달빛 치유사",
+    emoji: "🌙",
+    title: "Moonlight Healer",
+    color: "purple",
+    description: "깊은 공감력과 따뜻한 직관으로 주변의 마음을 어루만지는 유형. 당신의 존재 자체가 치유이며, 사람들은 당신 곁에서 평안을 느낍니다.",
+    strengths: ["공감력", "직관", "포용력", "인내심"],
+    weaknesses: ["과민함", "자기희생"],
+    signatureTraits: ["empathetic", "peaceful", "patient", "harmonious", "intuitive"],
+    bestMatch: "pioneer",
+    goodMatches: ["dreamer", "oracle"],
+    challengeMatch: "commander",
+  },
+  {
+    id: "creator",
+    name: "불꽃 창조자",
+    emoji: "🔥",
+    title: "Flame Creator",
+    color: "red",
+    description: "무에서 유를 창조하는 특별한 재능. 세상을 다른 눈으로 보며, 상상을 현실로 만드는 능력이 탁월합니다. 예술과 혁신의 화신.",
+    strengths: ["창의력", "상상력", "표현력", "독창성"],
+    weaknesses: ["변덕", "완벽주의"],
+    signatureTraits: ["creative", "visionary", "catalyst", "energetic", "storyteller"],
+    bestMatch: "sage",
+    goodMatches: ["pioneer", "dreamer"],
+    challengeMatch: "commander",
+  },
+  {
+    id: "sage",
+    name: "숲의 현자",
+    emoji: "🌿",
+    title: "Forest Sage",
+    color: "green",
+    description: "깊은 사색과 분석력으로 진리를 꿰뚫어 보는 유형. 고요한 외면 뒤에 넓은 지혜의 바다가 있으며, 당신의 한마디가 많은 사람의 길을 밝힙니다.",
+    strengths: ["통찰력", "분석력", "차분함", "지혜"],
+    weaknesses: ["우유부단", "과도한 사색"],
+    signatureTraits: ["intellectual", "analytical", "grounded", "patient", "introspective"],
+    bestMatch: "creator",
+    goodMatches: ["oracle", "healer"],
+    challengeMatch: "pioneer",
+  },
+  {
+    id: "adventurer",
+    name: "바람의 모험가",
+    emoji: "🌊",
+    title: "Wind Adventurer",
+    color: "cyan",
+    description: "자유로운 영혼으로 세상을 누비는 유형. 미지의 세계에 대한 호기심이 무한하며, 어디서든 새로운 가능성을 발견합니다.",
+    strengths: ["적응력", "호기심", "사교성", "활력"],
+    weaknesses: ["산만함", "정착 어려움"],
+    signatureTraits: ["explorer", "spontaneous", "social", "motivator", "driven"],
+    bestMatch: "dreamer",
+    goodMatches: ["pioneer", "commander"],
+    challengeMatch: "oracle",
+  },
+  {
+    id: "oracle",
+    name: "수정 예언자",
+    emoji: "🔮",
+    title: "Crystal Oracle",
+    color: "violet",
+    description: "뛰어난 직관과 영적 감각으로 보이지 않는 것을 감지하는 유형. 미래를 내다보는 듯한 통찰력으로, 주변 사람들에게 방향을 제시합니다.",
+    strengths: ["직관력", "영감", "통찰", "신비로움"],
+    weaknesses: ["비현실적", "고립"],
+    signatureTraits: ["intuitive", "visionary", "introspective", "empathetic", "harmonious"],
+    bestMatch: "commander",
+    goodMatches: ["healer", "sage"],
+    challengeMatch: "adventurer",
+  },
+  {
+    id: "commander",
+    name: "황금 지휘자",
+    emoji: "👑",
+    title: "Golden Commander",
+    color: "yellow",
+    description: "전략적 사고와 현실적 감각을 겸비한 실력파. 목표를 세우면 반드시 달성하며, 팀을 이끌고 시스템을 구축하는 데 탁월합니다.",
+    strengths: ["전략", "실행력", "체계", "목표 의식"],
+    weaknesses: ["완고함", "워커홀릭"],
+    signatureTraits: ["analytical", "ambitious", "grounded", "motivator", "driven"],
+    bestMatch: "oracle",
+    goodMatches: ["adventurer", "pioneer"],
+    challengeMatch: "healer",
+  },
+  {
+    id: "dreamer",
+    name: "별빛 몽상가",
+    emoji: "✨",
+    title: "Starlight Dreamer",
+    color: "pink",
+    description: "풍부한 감성과 상상력으로 세상에 아름다움을 더하는 유형. 현실과 꿈의 경계를 자유롭게 넘나들며, 당신만의 독특한 세계를 가지고 있습니다.",
+    strengths: ["감성", "상상력", "평화", "유연함"],
+    weaknesses: ["비현실적", "우유부단"],
+    signatureTraits: ["creative", "peaceful", "intuitive", "patient", "explorer"],
+    bestMatch: "adventurer",
+    goodMatches: ["creator", "healer"],
+    challengeMatch: "sage",
+  },
+];
+
+export function getArchetype(traits: string[]): FortuneArchetype {
+  let bestScore = -1;
+  let bestType = ARCHETYPES[0];
+  for (const archetype of ARCHETYPES) {
+    const score = traits.filter((t) => archetype.signatureTraits.includes(t)).length;
+    if (score > bestScore) {
+      bestScore = score;
+      bestType = archetype;
+    }
+  }
+  return bestType;
+}
+
+export function getArchetypeById(id: string): FortuneArchetype | undefined {
+  return ARCHETYPES.find((a) => a.id === id);
+}
+
+export function getAllArchetypes(): FortuneArchetype[] {
+  return ARCHETYPES;
+}
+
+export function getCompatibility(myType: FortuneArchetype, targetId: string): CompatibilityResult {
+  const target = ARCHETYPES.find((a) => a.id === targetId)!;
+  let level: CompatibilityResult["level"];
+  let score: number;
+  let description: string;
+
+  if (myType.bestMatch === targetId) {
+    level = "best";
+    score = 95;
+    description = `${myType.name}과 ${target.name}은 최고의 조합! ${myType.strengths[0]}과 ${target.strengths[0]}이 만나 서로의 부족한 점을 완벽하게 채워줍니다. 함께할 때 시너지가 폭발하는 운명적 관계.`;
+  } else if (myType.goodMatches.includes(targetId)) {
+    level = "good";
+    score = 78;
+    description = `${myType.name}과 ${target.name}은 좋은 에너지를 주고받는 관계. 서로의 ${myType.strengths[1]}과 ${target.strengths[1]}을 존중하며 함께 성장할 수 있습니다.`;
+  } else if (myType.challengeMatch === targetId) {
+    level = "challenge";
+    score = 45;
+    description = `${myType.name}과 ${target.name}은 도전적인 관계. 하지만 극과 극은 통한다! 서로의 다름을 인정하면 오히려 가장 큰 성장의 기회가 됩니다.`;
+  } else {
+    level = "neutral";
+    score = 65;
+    description = `${myType.name}과 ${target.name}은 편안한 관계. 특별한 갈등 없이 자연스럽게 어울리며, 상황에 따라 좋은 파트너가 될 수 있습니다.`;
+  }
+
+  return { targetType: target, level, score, description };
+}
+
+export function getAllCompatibilities(myType: FortuneArchetype): CompatibilityResult[] {
+  return ARCHETYPES
+    .filter((a) => a.id !== myType.id)
+    .map((a) => getCompatibility(myType, a.id))
+    .sort((a, b) => b.score - a.score);
+}
+
+// ── 데일리 카드 (미니 타로) ──
+const DAILY_CARDS: Omit<DailyCard, "reversed">[] = [
+  { id: 0, name: "태양", emoji: "☀️", meaning: "성공과 활력", advice: "자신감을 갖고 빛나세요. 오늘은 당신이 주인공입니다." },
+  { id: 1, name: "달", emoji: "🌙", meaning: "직관과 신비", advice: "내면의 목소리에 귀 기울이세요. 답은 이미 당신 안에 있습니다." },
+  { id: 2, name: "별", emoji: "⭐", meaning: "희망과 영감", advice: "꿈을 향해 한 걸음 내딛으세요. 우주가 응원하고 있습니다." },
+  { id: 3, name: "탑", emoji: "🗼", meaning: "변화와 해방", advice: "두려워하지 마세요. 무너진 자리에서 더 강한 것이 세워집니다." },
+  { id: 4, name: "연인", emoji: "💕", meaning: "선택과 조화", advice: "마음이 이끄는 방향을 따르세요. 진심은 결코 배신하지 않습니다." },
+  { id: 5, name: "전차", emoji: "🏇", meaning: "의지와 승리", advice: "결단의 시간입니다. 과감하게 달려가면 원하는 것을 얻습니다." },
+  { id: 6, name: "힘", emoji: "🦁", meaning: "용기와 인내", advice: "부드러움 속에 진정한 힘이 있습니다. 인내가 곧 승리입니다." },
+  { id: 7, name: "운명의 수레바퀴", emoji: "🎡", meaning: "전환과 행운", advice: "변화의 바람이 불고 있습니다. 흐름에 몸을 맡기세요." },
+  { id: 8, name: "정의", emoji: "⚖️", meaning: "균형과 공정", advice: "올바른 판단이 좋은 결과를 가져옵니다. 중심을 잃지 마세요." },
+  { id: 9, name: "은둔자", emoji: "🏔️", meaning: "성찰과 지혜", advice: "잠시 멈추고 돌아보세요. 고요함 속에서 지혜를 발견합니다." },
+  { id: 10, name: "마법사", emoji: "🪄", meaning: "창조와 재능", advice: "당신에게는 상황을 바꿀 힘이 있습니다. 그 재능을 펼치세요." },
+  { id: 11, name: "여황제", emoji: "👸", meaning: "풍요와 돌봄", advice: "주변을 돌보는 마음이 당신에게도 풍요를 가져다줍니다." },
+  { id: 12, name: "세계", emoji: "🌍", meaning: "완성과 성취", advice: "하나의 사이클이 마무리됩니다. 성취를 축하하고 새로운 시작을 준비하세요." },
+  { id: 13, name: "절제", emoji: "🏺", meaning: "조화와 균형", advice: "극단을 피하고 중용의 길을 걸으세요. 조화가 가장 큰 힘입니다." },
+  { id: 14, name: "악마", emoji: "😈", meaning: "유혹과 집착", advice: "나를 묶고 있는 것이 무엇인지 직시하세요. 인식이 곧 해방입니다." },
+  { id: 15, name: "황제", emoji: "🏰", meaning: "권위와 안정", advice: "체계를 세우고 기본에 충실하세요. 기초가 탄탄해야 높이 올라갑니다." },
+  { id: 16, name: "교황", emoji: "📿", meaning: "가르침과 전통", advice: "경험 많은 사람의 조언을 구하세요. 지혜는 나누면 커집니다." },
+  { id: 17, name: "죽음", emoji: "🦋", meaning: "변신과 재생", advice: "끝이 곧 새로운 시작입니다. 과거를 보내고 변화를 맞이하세요." },
+  { id: 18, name: "심판", emoji: "📯", meaning: "각성과 부활", advice: "지난 경험에서 교훈을 얻고, 더 나은 자신으로 거듭나세요." },
+  { id: 19, name: "바보", emoji: "🃏", meaning: "자유와 새출발", advice: "계산하지 말고 직감을 믿으세요. 순수한 마음이 최고의 나침반입니다." },
+  { id: 20, name: "여사제", emoji: "📖", meaning: "지혜와 비밀", advice: "보이는 것이 전부가 아닙니다. 깊이 들여다보면 숨겨진 진실을 발견합니다." },
+  { id: 21, name: "매달린 사람", emoji: "🙃", meaning: "관점 전환", advice: "다른 각도에서 바라보세요. 불편한 상황이 오히려 깨달음을 줍니다." },
+];
+
+export function getDailyCard(birthday: Birthday): DailyCard {
+  const today = new Date();
+  const dateSeed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+  const personalSeed = dateSeed + birthday.year + birthday.month * 31 + birthday.day;
+  const rand = seededRandom(personalSeed);
+  const cardIndex = Math.floor(rand() * DAILY_CARDS.length);
+  const reversed = rand() > 0.7;
+  return { ...DAILY_CARDS[cardIndex], reversed };
+}
+
+// ── 오늘의 한마디 ──
+const DAILY_QUOTES = [
+  "오늘의 당신은 어제보다 한 걸음 더 앞에 서 있습니다.",
+  "우주는 준비된 자에게 기회를 보냅니다. 오늘이 그날일 수 있습니다.",
+  "작은 행동 하나가 운명의 물줄기를 바꿀 수 있습니다.",
+  "당신의 직감은 지금 가장 정확한 나침반입니다.",
+  "오늘 만나는 사람 중 한 명이 당신의 미래를 바꿀 수 있습니다.",
+  "마음이 이끄는 곳에 답이 있습니다. 머리보다 가슴을 믿으세요.",
+  "새벽이 오기 직전이 가장 어둡습니다. 포기하지 마세요.",
+  "오늘의 실패는 내일의 성공을 위한 레슨입니다.",
+  "별은 어둠 속에서만 빛납니다. 지금 이 순간이 당신의 빛나는 때입니다.",
+  "인생에서 가장 좋은 것들은 예상하지 못할 때 찾아옵니다.",
+  "당신이 흘린 노력의 씨앗이 곧 꽃을 피울 것입니다.",
+  "오늘은 새로운 사람에게 먼저 다가가 보세요. 좋은 인연이 기다리고 있습니다.",
+  "가끔은 멈추는 것도 용기입니다. 쉬어가도 괜찮습니다.",
+  "지금 느끼는 불안은 성장의 신호입니다. 당신은 진화 중입니다.",
+  "오늘 하는 작은 선택이 1년 뒤의 당신을 만듭니다.",
+  "당신의 에너지는 전염됩니다. 좋은 기운을 나눌수록 돌아옵니다.",
+  "과거는 교훈이고, 미래는 가능성입니다. 오늘에 집중하세요.",
+  "당신이 원하는 것은 이미 당신을 향해 오고 있습니다.",
+  "가장 큰 모험은 자기 자신을 알아가는 여정입니다.",
+  "운명은 정해진 것이 아니라 만들어가는 것입니다. 오늘도 한 획을 그어보세요.",
+  "당신의 존재만으로 누군가에게 힘이 되고 있습니다.",
+  "겁먹지 마세요. 별도 한때는 먼지였습니다.",
+  "오늘의 한 줄: 가장 어두운 밤에도 별은 떠 있습니다.",
+  "당신이 두려워하는 바로 그 너머에 원하는 것이 있습니다.",
+  "우연은 없습니다. 모든 만남과 사건에는 의미가 있습니다.",
+  "지금 이 순간, 당신은 최선을 다하고 있습니다. 스스로를 믿으세요.",
+  "행운은 용기 있는 자의 편입니다. 오늘, 한 발 내딛어 보세요.",
+  "가슴이 뛰는 일을 찾았다면, 그것이 당신의 길입니다.",
+  "당신이 지나온 모든 길이 지금의 당신을 만들었습니다.",
+  "오늘은 당신의 이야기에 새로운 한 페이지가 추가되는 날입니다.",
+];
+
+export function getDailyQuote(birthday: Birthday): string {
+  const today = new Date();
+  const dateSeed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
+  const personalSeed = dateSeed + birthday.year * 3 + birthday.month * 17 + birthday.day * 7;
+  const rand = seededRandom(personalSeed);
+  return DAILY_QUOTES[Math.floor(rand() * DAILY_QUOTES.length)];
+}
+
+// ── FortuneResult에 아키타입 추가 ──
+export { ARCHETYPES };
 
 // trait 영문 → 한글 변환
 function traitToKo(trait: string): string {

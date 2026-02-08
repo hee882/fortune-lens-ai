@@ -19,6 +19,17 @@ export const metadata: Metadata = {
   title: "FortuneLens AI - AI 운세 분석",
   description: "AI 렌즈로 들여다보는 당신의 운명. 이름과 생년월일로 개인화된 운세를 확인하세요.",
   keywords: ["운세", "AI 운세", "별자리", "수비학", "fortune", "horoscope", "FortuneLens"],
+  openGraph: {
+    title: "FortuneLens AI - 당신의 운명을 들여다보세요",
+    description: "생년월일과 5가지 선택으로 AI가 분석하는 맞춤 운세. 오늘의 운세부터 인생 운세까지!",
+    type: "website",
+    siteName: "FortuneLens AI",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FortuneLens AI - 당신의 운명을 들여다보세요",
+    description: "생년월일과 5가지 선택으로 AI가 분석하는 맞춤 운세. 나의 운세 유형은?",
+  },
 };
 
 export default function RootLayout({
