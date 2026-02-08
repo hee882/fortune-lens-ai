@@ -8,6 +8,7 @@ import NameStep from "./NameStep";
 import BirthdayStep from "./BirthdayStep";
 import QuestionStep from "./QuestionStep";
 import ScanningStep from "./ScanningStep";
+import ResultStep from "./ResultStep";
 
 interface StepRendererProps {
   step: number;
@@ -24,6 +25,7 @@ export default function StepRenderer({ step, direction }: StepRendererProps) {
       return <QuestionStep question={questions[qIndex]} index={qIndex} />;
     }
     if (step === 8) return <ScanningStep />;
+    if (step === 9) return <ResultStep />;
     return null;
   };
 

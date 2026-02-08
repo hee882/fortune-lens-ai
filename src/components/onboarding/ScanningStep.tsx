@@ -13,7 +13,7 @@ const SCAN_MESSAGES = [
 ];
 
 export default function ScanningStep() {
-  const { userProfile } = useOnboardingStore();
+  const { userProfile, nextStep } = useOnboardingStore();
   const [messageIndex, setMessageIndex] = useState(0);
   const [progress, setProgress] = useState(0);
 
@@ -29,11 +29,17 @@ export default function ScanningStep() {
       });
     }, 50);
 
+    // 5초 후 결과 화면으로 이동
+    const completeTimeout = setTimeout(() => {
+      nextStep();
+    }, 5000);
+
     return () => {
       clearInterval(msgInterval);
       clearInterval(progressInterval);
+      clearTimeout(completeTimeout);
     };
-  }, []);
+  }, [nextStep]);
 
   return (
     <div className="flex flex-col items-center text-center space-y-8">

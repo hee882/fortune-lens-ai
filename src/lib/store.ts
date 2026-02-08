@@ -2,7 +2,7 @@ import { create } from "zustand";
 import type { Birthday, OnboardingState } from "./types";
 import { extractTraits } from "./questions";
 
-export const TOTAL_STEPS = 9; // 0=welcome, 1=name, 2=birthday, 3-7=questions, 8=scanning
+export const TOTAL_STEPS = 10; // 0=welcome, 1=name, 2=birthday, 3-7=questions, 8=scanning, 9=result
 
 export const useOnboardingStore = create<OnboardingState>((set) => ({
   currentStep: 0,
