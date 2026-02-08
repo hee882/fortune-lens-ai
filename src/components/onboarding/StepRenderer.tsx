@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { slideVariants } from "@/lib/animations";
-import { questions } from "@/lib/questions";
+import { useOnboardingStore } from "@/lib/store";
 import WelcomeStep from "./WelcomeStep";
 import NameStep from "./NameStep";
 import BirthdayStep from "./BirthdayStep";
@@ -16,13 +16,15 @@ interface StepRendererProps {
 }
 
 export default function StepRenderer({ step, direction }: StepRendererProps) {
+  const sessionQuestions = useOnboardingStore((s) => s.sessionQuestions);
+
   const renderStep = () => {
     if (step === 0) return <WelcomeStep />;
     if (step === 1) return <NameStep />;
     if (step === 2) return <BirthdayStep />;
     if (step >= 3 && step <= 7) {
       const qIndex = step - 3;
-      return <QuestionStep question={questions[qIndex]} index={qIndex} />;
+      return <QuestionStep question={sessionQuestions[qIndex]} index={qIndex} />;
     }
     if (step === 8) return <ScanningStep />;
     if (step === 9) return <ResultStep />;

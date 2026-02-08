@@ -1,10 +1,16 @@
 import { create } from "zustand";
 import type { Birthday, OnboardingState } from "./types";
-import { extractTraits } from "./questions";
+import type { Question } from "./types";
+import { extractTraits, pickRandomQuestions } from "./questions";
 
 export const TOTAL_STEPS = 10; // 0=welcome, 1=name, 2=birthday, 3-7=questions, 8=scanning, 9=result
 
-export const useOnboardingStore = create<OnboardingState>((set) => ({
+interface StoreState extends OnboardingState {
+  sessionQuestions: Question[];
+  initSession: () => void;
+}
+
+export const useOnboardingStore = create<StoreState>((set) => ({
   currentStep: 0,
   direction: 1,
   userProfile: {
@@ -14,6 +20,12 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
     answers: {},
   },
   isAnalyzing: false,
+  sessionQuestions: pickRandomQuestions(),
+
+  initSession: () =>
+    set({
+      sessionQuestions: pickRandomQuestions(),
+    }),
 
   nextStep: () =>
     set((state) => ({
@@ -58,5 +70,6 @@ export const useOnboardingStore = create<OnboardingState>((set) => ({
       direction: 1 as const,
       userProfile: { name: "", birthday: null, traits: [], answers: {} },
       isAnalyzing: false,
+      sessionQuestions: pickRandomQuestions(),
     }),
 }));
