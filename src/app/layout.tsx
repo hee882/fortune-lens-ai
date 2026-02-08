@@ -15,7 +15,10 @@ export const viewport: Viewport = {
   themeColor: "#0a0a2e",
 };
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://fortune-lens-ai.pages.dev";
+// CF_PAGES_URL: Cloudflare Pages 빌드 시 자동 제공 (https://... 형태)
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL
+  || process.env.CF_PAGES_URL
+  || "https://fortune-lens-ai.pages.dev";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

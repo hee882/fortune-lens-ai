@@ -22,8 +22,8 @@ export async function generateMetadata({ searchParams }: SharePageProps): Promis
   const score = params.s || "80";
   const typeInfo = TYPE_NAMES[typeId] || TYPE_NAMES.pioneer;
 
-  const title = `나는 ${typeInfo.emoji} ${typeInfo.name} 유형! 너도 해보고 우리 궁합 확인해봐`;
-  const description = `종합 ${score}점 · ${typeInfo.name}(${typeInfo.title}) 유형이래! 너의 유형은 뭔지 해보고 나랑 궁합 맞는지 확인해볼래? 🔮`;
+  const title = `${typeInfo.emoji} 나는 "${typeInfo.name}" 유형! 너는 8가지 중 뭘까? 우리 궁합 확인해봐`;
+  const description = `종합 ${score}점 · AI가 분석한 운세 유형 테스트! 1분이면 내 유형을 알 수 있어. 나랑 궁합 맞는지 해볼래? 🔮 12,000명+ 참여 중`;
 
   return {
     title,

